@@ -173,6 +173,15 @@ resource "aws_launch_template" "_3-tierproject-launch_template" {
     subnet_id                   = aws_subnet.web-tier1-public.id  # Replace with your desired subnet ID
   }
 
+  user_data = <<-EOF
+    #!/bin/bash
+    sudo apt update -y
+    sudo apt install -y httpd
+    sudo systemctl start httpd
+    sudo systemctl enable https
+    echo "<html><body><h1>New Website -Demo for 3Tier Application</h1></body></html>" > /var/www/html/index.html
+  EOF
+
   tags = {
     Name = "_3-tierproject-launch_template"
   }
@@ -193,3 +202,31 @@ resource "aws_launch_template" "_3-tierproject-launch_template" {
     create_before_destroy = true
   }
 }
+
+# Define an Auto Scaling Group
+resource "aws_autoscaling_group" "_3-tierproject-asg" {
+  # Specify the name of the Auto Scaling Group
+  name = "_3-tierproject-asg"
+
+  # Launch configuration or launch template to use for the instances
+  launch_configuration = aws_launch_template._3-tierproject-launch_template.id
+
+  # Minimum and maximum number of instances in the Auto Scaling Group
+  min_size = 1
+  max_size = 2
+
+  # Desired number of instances to maintain
+  desired_capacity = 1
+
+  # Subnets where instances will be launched
+  vpc_zone_identifier = [aws_subnet.web-tier1-public.id, aws_subnet.web-tier2-public.id]  # Replace with your subnet IDs
+
+  # Load Balancer names (optional)
+  #load_balancers = ["example-elb"]  # Replace with your ELB name if using
+
+  # Health check configuration
+  #health_check_type        = "ELB"
+  #health_check_grace_period = 300
+
+}
+
