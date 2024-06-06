@@ -1,4 +1,4 @@
-# VPC Resource
+# VPC Resource Creation
 resource "aws_vpc" "_3-tierproject-vpc" {
   cidr_block = "10.0.0.0/16"
 
@@ -7,7 +7,7 @@ resource "aws_vpc" "_3-tierproject-vpc" {
   }
 }
 
-# Internet Gateway Resource
+# Internet Gateway Resource Creation
 resource "aws_internet_gateway" "_3-tierproject-igw" {
   vpc_id = aws_vpc._3-tierproject-vpc.id
 
@@ -16,7 +16,7 @@ resource "aws_internet_gateway" "_3-tierproject-igw" {
   }
 }
 
-# Route Table Resource - public
+# Route Table Resource - PublicRT
 resource "aws_route_table" "_3-tierproject-public_rt" {
   vpc_id = aws_vpc._3-tierproject-vpc.id
 
@@ -27,6 +27,20 @@ resource "aws_route_table" "_3-tierproject-public_rt" {
 
   tags = {
     Name = "_3-tierproject-public_rt"
+  }
+}
+
+# Route Table Resource - PrivateRT
+resource "aws_route_table" "_3-tierproject-private_rt" {
+  vpc_id = aws_vpc._3-tierproject-vpc.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway._3-tierproject-nat_gw.id
+  }
+
+  tags = {
+    Name = "_3-tierproject-private_rt"
   }
 }
 
@@ -49,21 +63,7 @@ resource "aws_nat_gateway" "_3-tierproject-nat_gw" {
   }
 }
 
-# Route Table Resource - private
-resource "aws_route_table" "_3-tierproject-private_rt" {
-  vpc_id = aws_vpc._3-tierproject-vpc.id
-
-  route {
-    cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway._3-tierproject-nat_gw.id
-  }
-
-  tags = {
-    Name = "_3-tierproject-private_rt"
-  }
-}
-
-# Subnet Resource -public
+# Subnet Resource -Public1 [With different AZ]
 resource "aws_subnet" "web-tier1-public" {
   vpc_id     =  aws_vpc._3-tierproject-vpc.id
   cidr_block = "10.0.1.0/24"
@@ -74,6 +74,7 @@ resource "aws_subnet" "web-tier1-public" {
     Name = "web-tier1-public"
   }
 }
+# Subnet Resource -Public2 [With different AZ]
 resource "aws_subnet" "web-tier2-public" {
   vpc_id     =  aws_vpc._3-tierproject-vpc.id
   cidr_block = "10.0.2.0/24"
@@ -85,7 +86,7 @@ resource "aws_subnet" "web-tier2-public" {
   }
 }
 
-# Subnet Resource -private
+# Subnet Resource -private1 [With different AZ]
 resource "aws_subnet" "application-tier1-private" {
   vpc_id     =  aws_vpc._3-tierproject-vpc.id
   cidr_block = "10.0.3.0/24"
@@ -96,6 +97,7 @@ resource "aws_subnet" "application-tier1-private" {
     Name = "application-tier1-private"
   }
 }
+# Subnet Resource -private1 [With different AZ]
 resource "aws_subnet" "application-tier2-private" {
   vpc_id     =  aws_vpc._3-tierproject-vpc.id
   cidr_block = "10.0.4.0/24"
@@ -107,7 +109,7 @@ resource "aws_subnet" "application-tier2-private" {
   }
 }
 
-#Associate Subnet to Route Table
+#Subnet Association to Route Table [Public]
 resource "aws_route_table_association" "Association-public1-subnet" {
   subnet_id      = aws_subnet.web-tier1-public.id
   route_table_id = aws_route_table._3-tierproject-public_rt.id
@@ -116,7 +118,7 @@ resource "aws_route_table_association" "Association-public2-subnet" {
   subnet_id      = aws_subnet.web-tier2-public.id
   route_table_id = aws_route_table._3-tierproject-public_rt.id
 }
-
+#Subnet Association to Route Table [Private]
 resource "aws_route_table_association" "Association-private1-subnet" {
   subnet_id      = aws_subnet.application-tier1-private.id
   route_table_id = aws_route_table._3-tierproject-private_rt.id
@@ -176,18 +178,17 @@ resource "aws_security_group" "_3-application-tierproject-SG" {
     ]
   }
 
-  # Allow HTTP access from anywhere
+
   ingress {
-    description      = "HTTP access"
+    description      = "HTTP access"   # Allow HTTP access from anywhere
     from_port        = 80
     to_port          = 80
     protocol         = "tcp"
     cidr_blocks      = ["0.0.0.0/0"]
   }
 
-  # Allow MySQL access from anywhere
   ingress {
-    description      = "MySQL access"
+    description      = "MySQL access"  # Allow MySQL access from anywhere
     from_port        = 3306
     to_port          = 3306
     protocol         = "tcp"
@@ -220,13 +221,14 @@ resource "aws_launch_template" "_3-web-tierproject-lt" {
     subnet_id                   = aws_subnet.web-tier1-public.id  # Replace with your desired subnet ID
   }
 
-  user_data = base64encode(<<-EOF
+  #User date configuration [Shell Script to install apache2 webserver and run the simple html file -index.html]
+  user_data = base64encode (<<-EOF
     #!/bin/bash
     sudo apt update -y
-    sudo apt install -y httpd
-    sudo systemctl start httpd
-    sudo systemctl enable https
-    echo "<html><body><h1>New Website -Demo for 3Tier Application</h1></body></html>" > /var/www/html/index.html
+    sudo apt install -y apache2
+    sudo systemctl start apache2
+    sudo systemctl enable apache2
+    echo "<html><body><h1>I AM CHUKWUEMEKA EZEOBI; TERRAFORM IS MY NEW SUPER POWER</h1></body></html>" > /var/www/html/index.html
   EOF
   )
 
@@ -301,11 +303,12 @@ resource "aws_autoscaling_group" "_3-web-tierproject-asg" {
     version = "$Latest"
   }
 
-  target_group_arns = [
-    # Replace with your target group ARN if needed
-  ]
+  tag {
+    key                 = "Name"
+    value               = "Web-Server"
+    propagate_at_launch = true
+  }
 
-  
   lifecycle {
     create_before_destroy = true
   }
@@ -327,10 +330,11 @@ resource "aws_autoscaling_group" "_3-application-tierproject-asg" {
     version = "$Latest"
   }
 
-  target_group_arns = [
-    # Replace with your target group ARN if needed
-  ]
-
+  tag {
+    key                 = "Name"
+    value               = "Application-Server"
+    propagate_at_launch = true
+  }
   
   lifecycle {
     create_before_destroy = true
