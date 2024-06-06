@@ -127,7 +127,7 @@ resource "aws_route_table_association" "Association-private2-subnet" {
 }
 
 # Security Group Resource -web-tier
-resource "aws_security_group" "_3-web-tier-tierproject-SG" {
+resource "aws_security_group" "_3-web-tierproject-SG" {
   vpc_id = aws_vpc._3-tierproject-vpc.id
   name        = "_3-tierproject-SG"
   description = "Allow inbound traffic"
@@ -154,7 +154,7 @@ resource "aws_security_group" "_3-web-tier-tierproject-SG" {
   }
 
   tags = {
-    Name = "_3-web-tier-tierproject-SG"
+    Name = "_3-web-tierproject-SG"
   }
 }
 
@@ -216,7 +216,7 @@ resource "aws_launch_template" "_3-web-tierproject-lt" {
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group._3-web-tier-tierproject-SG.id]
+    security_groups             = [aws_security_group._3-web-tierproject-SG.id]
     subnet_id                   = aws_subnet.web-tier1-public.id  # Replace with your desired subnet ID
   }
 
@@ -286,8 +286,8 @@ resource "aws_launch_template" "_3-application-tierproject-lt" {
   }
 }
 
-# Auto Scaling Group
-resource "aws_autoscaling_group" "_3-tierproject-asg" {
+# Auto Scaling Group -web-tier
+resource "aws_autoscaling_group" "_3-web-tierproject-asg" {
   desired_capacity     = 1
   max_size             = 1
   min_size             = 1
@@ -297,7 +297,33 @@ resource "aws_autoscaling_group" "_3-tierproject-asg" {
   ]
 
   launch_template {
-    id      = aws_launch_template._3-tierproject-launch_template.id
+    id      = aws_launch_template._3-web-tierproject-lt.id
+    version = "$Latest"
+  }
+
+  target_group_arns = [
+    # Replace with your target group ARN if needed
+  ]
+
+  
+  lifecycle {
+    create_before_destroy = true
+  }
+  
+}
+
+# Auto Scaling Group -application-tier
+resource "aws_autoscaling_group" "_3-application-tierproject-asg" {
+  desired_capacity     = 1
+  max_size             = 1
+  min_size             = 1
+  vpc_zone_identifier  = [
+    aws_subnet.application-tier1-private.id,
+    aws_subnet.application-tier2-private.id
+  ]
+
+  launch_template {
+    id      = aws_launch_template._3-application-tierproject-lt.id
     version = "$Latest"
   }
 
