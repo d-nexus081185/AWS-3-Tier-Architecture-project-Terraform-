@@ -125,3 +125,35 @@ resource "aws_route_table_association" "Association-private2-subnet" {
   subnet_id      = aws_subnet.application-tier2-private.id
   route_table_id = aws_route_table._3-tierproject-private_rt.id
 }
+
+# Security Group Resource
+resource "aws_security_group" "_3-tierproject-SG" {
+  vpc_id = aws_vpc._3-tierproject-vpc.id
+  name        = "_3-tierproject-SG"
+  description = "Allow inbound traffic"
+
+  ingress = [
+    for port in [22, 80 ] : {
+      description      = "inbound rules"
+      from_port        = port
+      to_port          = port
+      protocol         = "tcp"
+      cidr_blocks      = ["0.0.0.0/0"]
+      ipv6_cidr_blocks = []
+      prefix_list_ids  = []
+      security_groups  = []
+      self             = false
+    }
+  ]
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "_3-tierproject-SG"
+  }
+}
