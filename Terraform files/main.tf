@@ -126,8 +126,8 @@ resource "aws_route_table_association" "Association-private2-subnet" {
   route_table_id = aws_route_table._3-tierproject-private_rt.id
 }
 
-# Security Group Resource
-resource "aws_security_group" "_3-tierproject-SG" {
+# Security Group Resource -web-tier
+resource "aws_security_group" "_3-web-tier-tierproject-SG" {
   vpc_id = aws_vpc._3-tierproject-vpc.id
   name        = "_3-tierproject-SG"
   description = "Allow inbound traffic"
@@ -154,12 +154,59 @@ resource "aws_security_group" "_3-tierproject-SG" {
   }
 
   tags = {
-    Name = "_3-tierproject-SG"
+    Name = "_3-web-tier-tierproject-SG"
   }
 }
 
+# Security Group Resource - application-tier
+resource "aws_security_group" "_3-application-tierproject-SG" {
+  vpc_id = aws_vpc._3-tierproject-vpc.id
+  name        = "_3-application-tierproject-SG"
+  description = "Allow inbound traffic"
 
-# Launch Template Resource
+  # Allow SSH only from the web-tier subnet
+  ingress {
+    description      = "SSH access from web-tier subnet"
+    from_port        = 22
+    to_port          = 22
+    protocol         = "tcp"
+    cidr_blocks      = [
+      aws_subnet.web-tier1-public.cidr_block,
+      aws_subnet.web-tier2-public.cidr_block
+    ]
+  }
+
+  # Allow HTTP access from anywhere
+  ingress {
+    description      = "HTTP access"
+    from_port        = 80
+    to_port          = 80
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  # Allow MySQL access from anywhere
+  ingress {
+    description      = "MySQL access"
+    from_port        = 3306
+    to_port          = 3306
+    protocol         = "tcp"
+    cidr_blocks      = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "_3-application-tierproject-SG"
+  }
+}
+
+# Launch Template Resource -web-tier
 resource "aws_launch_template" "_3-tierproject-launch_template" {
   name_prefix   = "_3-tierproject-"
   image_id      = "ami-04b70fa74e45c3917" # Replace with your desired AMI ID
@@ -169,7 +216,7 @@ resource "aws_launch_template" "_3-tierproject-launch_template" {
 
   network_interfaces {
     associate_public_ip_address = true
-    security_groups             = [aws_security_group._3-tierproject-SG.id]
+    security_groups             = [aws_security_group._3-web-tier-tierproject-SG.id]
     subnet_id                   = aws_subnet.web-tier1-public.id  # Replace with your desired subnet ID
   }
 
