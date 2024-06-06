@@ -207,8 +207,8 @@ resource "aws_security_group" "_3-application-tierproject-SG" {
 }
 
 # Launch Template Resource -web-tier
-resource "aws_launch_template" "_3-tierproject-launch_template" {
-  name_prefix   = "_3-tierproject-"
+resource "aws_launch_template" "_3-web-tierproject-lt" {
+  name_prefix   = "_3-web-tierproject-"
   image_id      = "ami-04b70fa74e45c3917" # Replace with your desired AMI ID
   instance_type = "t2.micro"     # Replace with your desired instance type
 
@@ -231,7 +231,42 @@ resource "aws_launch_template" "_3-tierproject-launch_template" {
   )
 
   tags = {
-    Name = "_3-tierproject-launch_template"
+    Name = "_3-web-tierproject-lt"
+  }
+
+  block_device_mappings {
+    device_name = "/dev/xvda"
+    ebs {
+      volume_size = 8
+      volume_type = "gp2"
+    }
+  }
+
+  monitoring {
+    enabled = true
+  }
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# Launch Template Resource -application-tier
+resource "aws_launch_template" "_3-application-tierproject-lt" {
+  name_prefix   = "_3-tierproject-"
+  image_id      = "ami-04b70fa74e45c3917" # Replace with your desired AMI ID
+  instance_type = "t2.micro"     # Replace with your desired instance type
+
+  key_name = "tf-key"     # Replace with your key pair name
+
+  network_interfaces {
+    associate_public_ip_address = true
+    security_groups             = [aws_security_group._3-application-tierproject-SG.id]
+    subnet_id                   = aws_subnet.application-tier1-private.id  # Replace with your desired subnet ID
+  }
+
+  tags = {
+    Name = "_3-application-tierproject-lt"
   }
 
   block_device_mappings {
