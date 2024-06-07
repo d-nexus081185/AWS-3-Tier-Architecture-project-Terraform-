@@ -91,7 +91,7 @@ resource "aws_subnet" "application-tier1-private" {
   vpc_id     =  aws_vpc._3-tierproject-vpc.id
   cidr_block = "10.0.3.0/24"
   availability_zone = "us-east-1a"
-  map_public_ip_on_launch = "true"
+  #map_public_ip_on_launch = "true"
 
   tags = {
     Name = "application-tier1-private"
@@ -102,7 +102,7 @@ resource "aws_subnet" "application-tier2-private" {
   vpc_id     =  aws_vpc._3-tierproject-vpc.id
   cidr_block = "10.0.4.0/24"
   availability_zone = "us-east-1b"
-  map_public_ip_on_launch = "true"
+  #map_public_ip_on_launch = "true"
 
   tags = {
     Name = "application-tier2-private"
@@ -262,11 +262,11 @@ resource "aws_launch_template" "_3-application-tierproject-lt" {
   key_name = "tf-key"     # Replace with your key pair name
 
   network_interfaces {
-    associate_public_ip_address = true
+    associate_public_ip_address = false
     security_groups             = [aws_security_group._3-application-tierproject-SG.id]
     subnet_id                   = aws_subnet.application-tier1-private.id  # Replace with your desired subnet ID
   }
-
+  
   tags = {
     Name = "_3-application-tierproject-lt"
   }
@@ -305,7 +305,7 @@ resource "aws_autoscaling_group" "_3-web-tierproject-asg" {
 
   tag {
     key                 = "Name"
-    value               = "Web-Server"
+    value               = "Web-Server-Demo"
     propagate_at_launch = true
   }
 
@@ -332,7 +332,7 @@ resource "aws_autoscaling_group" "_3-application-tierproject-asg" {
 
   tag {
     key                 = "Name"
-    value               = "Application-Server"
+    value               = "Application-Server-Demo"
     propagate_at_launch = true
   }
   
@@ -340,4 +340,30 @@ resource "aws_autoscaling_group" "_3-application-tierproject-asg" {
     create_before_destroy = true
   }
   
+}
+
+# DB Instance
+resource "aws_db_instance" "application-tier_DB" {
+  allocated_storage    = 10
+  db_name              = "mydb"
+  engine               = "mysql"
+  engine_version       = "8.0"
+  instance_class       = "db.t3.micro"
+  username             = "admin"
+  password             = "Password123!"
+  parameter_group_name = "default.mysql8.0"
+  skip_final_snapshot  = true
+
+  vpc_security_group_ids = [aws_security_group._3-application-tierproject-SG.id]
+  db_subnet_group_name   = aws_db_subnet_group.mydb-subnet-group.name
+}
+
+# DB Subnet Group
+resource "aws_db_subnet_group" "mydb-subnet-group" {
+  name       = "mydb-subnet-group"
+  subnet_ids = [aws_subnet.application-tier1-private.id, aws_subnet.application-tier2-private.id]
+
+  tags = {
+    Name = "mydb-subnet-group"
+  }
 }
