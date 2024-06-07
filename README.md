@@ -15,6 +15,22 @@ The Steps in creating this project:
 6. Create route tables [Public/private]; Assign the default gateway to the internet (0.0.0.0/0) and attach to the VPC and IGW. Also attach the public and private subnets respectively to the route tables.
 7.  Configure the launch Templates
 8. User data
+#User date configuration [Shell Script to install apache2 webserver and run the simple html file -index.html]
+  user_data = base64encode (<<-EOF
+    #!/bin/bash
+    sudo apt update -y
+    sudo apt install -y apache2
+    sudo systemctl start apache2
+    sudo systemctl enable apache2
+    echo "<html><body><h1>I AM CHUKWUEMEKA EZEOBI; TERRAFORM IS MY NEW SUPER POWER</h1></body></html>" > /var/www/html/index.html
+  EOF
+  )
+
 9. Auto Scaling Groups
-10. Database Tier
+10. Database Tier [mysql -h terraform-20240607085935473000000001.c5u64e4swtr0.us-east-1.rds.amazonaws.com -P 3306 -u admin -p Password123!**]
+sudo apt update -y
+sudo apt install -y mysql-server
+sudo systemctl start mysql
+sudo systemctl enable mysql
+
 11. Testing 
