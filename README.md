@@ -22,7 +22,7 @@ The Steps in creating this project:
     sudo apt install -y apache2
     sudo systemctl start apache2
     sudo systemctl enable apache2
-    echo "<html><body><h1>I AM CHUKWUEMEKA EZEOBI; TERRAFORM IS MY NEW SUPER POWER</h1></body></html>" > /var/www/html/index.html
+    echo "<html><body><h4>I AM CHUKWUEMEKA EZEOBI; TERRAFORM IS MY NEW SUPER POWER</h4></body></html>" > /var/www/html/index.html
   EOF
   )
 
