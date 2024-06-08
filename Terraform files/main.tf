@@ -266,6 +266,16 @@ resource "aws_launch_template" "_3-application-tierproject-lt" {
     security_groups             = [aws_security_group._3-application-tierproject-SG.id]
     subnet_id                   = aws_subnet.application-tier1-private.id  # Replace with your desired subnet ID
   }
+
+  #User date configuration [Shell Script to install MySql on the Application tier]
+  user_data = base64encode (<<-EOF
+    #!/bin/bash
+    sudo apt update -y
+    sudo apt install -y mysql-server
+    sudo systemctl start mysql
+    sudo systemctl enable mysql
+  EOF
+  )
   
   tags = {
     Name = "_3-application-tierproject-lt"
