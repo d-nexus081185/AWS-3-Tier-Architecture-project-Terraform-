@@ -14,14 +14,14 @@ The Steps in creating this project:
 5. Create the NAT gateway
 6. Create route tables [Public/private]; Assign the default gateway to the internet (0.0.0.0/0) and attach to the VPC and IGW. Also attach the public and private subnets respectively to the route tables.
 7.  Configure the launch Templates
-8. User data
-#User date configuration [Shell Script to install apache2 webserver and run the simple html file -index.html]
-  user_data = base64encode (<<-EOF
-    #!/bin/bash
+8. User data<br>
+#User date configuration [Shell Script to install apache2 webserver and run the simple html file -index.html]<br>
+  user_data = base64encode (<<-EOF<br>
+    #!/bin/bash<br>
     sudo apt update -y
-    sudo apt install -y apache2
-    sudo systemctl start apache2
-    sudo systemctl enable apache2
+    sudo apt install -y apache2<br>
+    sudo systemctl start apache2<br>
+    sudo systemctl enable apache2<br>
     echo "<html><body><h4>I AM CHUKWUEMEKA EZEOBI; TERRAFORM IS MY NEW SUPER POWER</h4></body></html>" > /var/www/html/index.html
   EOF
   )
@@ -30,9 +30,9 @@ The Steps in creating this project:
 
 10. Database Tier [mysql -h [database.endpoint.id] -P 3306 -u [MySql.User] -p [MySql.Password]]<br>
 Install MySql on the Application tier server in both instances<br>
-sudo apt update -y
-sudo apt install -y mysql-server
-sudo systemctl start mysql
+sudo apt update -y<br>
+sudo apt install -y mysql-server<br>
+sudo systemctl start mysql<br>
 sudo systemctl enable mysql<br>
 
 11. Testing 
