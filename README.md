@@ -27,7 +27,9 @@ The Steps in creating this project:
   )
 
 9. Auto Scaling Groups
-10. Database Tier [mysql -h terraform-20240607085935473000000001.c5u64e4swtr0.us-east-1.rds.amazonaws.com -P 3306 -u admin -p Password123!**]
+
+10. Database Tier [mysql -h [database.endpoint.id] -P 3306 -u [MySql.User] -p [MySql.Password]]
+Install MySql on the Application tier server in both instances
 sudo apt update -y
 sudo apt install -y mysql-server
 sudo systemctl start mysql
