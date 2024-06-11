@@ -25,7 +25,7 @@ Install web server on the web tier ec2 instance<br>
 
 9. Auto Scaling Groups
 
-10. Database Tier [mysql -h [database.endpoint.id] -P 3306 -u [MySql.User] -p [MySql.Password]]<br>
+10. Database Tier [mysql -h [database.endpoint.id] -P 3306 -u [MySql.User] -p [MySql.Password]<br>
 Install MySql on the Application tier server in both instances<br>
 sudo apt update -y<br>
 sudo apt install -y mysql-server<br>

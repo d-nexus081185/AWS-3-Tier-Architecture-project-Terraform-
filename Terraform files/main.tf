@@ -1,3 +1,8 @@
+# Author    : Chukwuemeka Ezeobi
+# Email     : emekaezeobi@outlook.com
+# GitHub    : https://github.com/d-nexus081185
+########################################################
+
 # VPC Resource Creation
 resource "aws_vpc" "_3-tierproject-vpc" {
   cidr_block = "10.0.0.0/16"
